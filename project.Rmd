@@ -41,9 +41,9 @@ df = finalCrime %>%
   inner_join(povertyRate, by = "Name") %>%
   mutate(Population = round(as.numeric(`Poverty Estimate, All Ages`) * (100 / as.numeric(`Poverty Percent, All Ages`))))
   
-smallDf = df %>% 
-  select(`County`, `Violent crime`, `Murder and nonnegligent manslaughter`, `Rape`, `Robbery`, `Aggravated assault`, `Property crime`, `Burglary`, `Larceny-
-theft`, `Motor vehicle theft`, `Arson`, `Poverty Estimate, All Ages`, `Poverty Percent, All Ages`, `Population`)
+finalDF = df %>% 
+  select(-`Human Trafficking - Commercial Sex`, -`Human Trafficking - Involuntary Servitude`, -`Name`, -`State FIPS Code`, -`County FIPS Code`, -`Postal Code`) %>%
+  select(-starts_with("90%"))
 #fullCrime = crimeData %>%
 #  mutate(`Name` =str_c(County, " County"))
 
