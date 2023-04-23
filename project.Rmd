@@ -1,12 +1,13 @@
 ---
-title: "Group 3 Project"
+title: "Crime in Wisconsin"
 output:
   html_document:
     df_print: paged
 editor_options:
   chunk_output_type: inline
 ---
-
+## Introduction
+For our project, we focused on crime in Wisconsin as we have been seeing more and more crime in the news and wanted to see the crime levels in Wisconsin by county. More specifically, we wanted to answer the question: What is the relationship between wealth and crime?. To answer this question, we are defining wealth in each county is two ways: Median income and percent in poverty. From that, we plan to use a 95% confidence interval and linear regression to find how those factors affect the a vareity of crime (Assault, Arson, Murders, Larceny, Rape, and Robberies).
 
 ```{r setup, include=FALSE}
 library(tidyverse)
@@ -53,8 +54,11 @@ finalDF = df %>%
 #  mutate(`Metropolitan/Nonmetropolitan` = metro)
 ```
 
-```{r}
-ggplot(finalDF) + geom_col(aes(x = reorder(County, -Population), y = `Violent Crime`/(Population/100000)), fill = "navy") + theme(axis.text.x = element_text(angle = 90, vjust = 0.5)) + xlab("County") + ylab("Amount of Violent Crime per 100,000") + ggtitle("Amount of violent crime in Wisconsin by County", "In 2019") 
+```{r, echo=FALSE}
+ggplot(finalDF) + geom_col(aes(x = reorder(County, -Population), y = `Violent Crime`/(Population/100000)), fill = "navy") + theme(axis.text.x = element_text(angle = 90, vjust = 0.5)) + xlab("County") + ylab("Amount of Violent Crime per 100,000") + ggtitle("Amount of violent crime in Wisconsin by County", "In 2019")
+```
+```{r, echo=FALSE}
+ggplot(finalDF) + geom_point(aes(x = reorder(County, -Population), y = as.numeric(`Median Household Income`))) + theme(axis.text.x = element_text(angle = 90, vjust = 0.5))
 ```
 
 
