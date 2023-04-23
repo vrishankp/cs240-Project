@@ -1,0 +1,68 @@
+---
+title: "Group 3 Project"
+output: html_notebook
+editor_options: 
+  chunk_output_type: inline
+---
+
+This is an [R Markdown](http://rmarkdown.rstudio.com) Notebook. When you execute code within the notebook, the results appear beneath the code. 
+
+Try executing this chunk by clicking the *Run* button within the chunk or by placing your cursor inside it and pressing *Cmd+Shift+Enter*. 
+
+```{r}
+library(tidyverse)
+library(readr)
+library(readxl)
+library(stringr)
+povertyRate = read_xls("est19all.xls", col_names = TRUE, skip = 3) %>%
+  filter(`Postal Code` == "WI")
+#crimeData = read_xls("wisconsin.xls", skip = 5)
+wiDOJ = read_csv("wi_doj_crime.csv") %>%
+  filter(ReportYear == 2019)
+```
+
+```{r}
+wiCrimeData = wiDOJ %>%
+  group_by(OffenseDescription, County) %>%
+  summarise(count = sum(OffenseCount)) %>%
+  pivot_wider(names_from = OffenseDescription, values_from = count)
+
+category = wiDOJ %>%
+  group_by(County, Category) %>%
+  summarize(total = sum(OffenseCount)) %>%
+  pivot_wider(names_from = Category, values_from = total) %>%
+  select(-`Simple Assault`)
+
+finalCrime = wiCrimeData %>%
+  full_join(category)
+
+df = finalCrime %>% 
+  mutate(`Name` =str_c(County, " County")) %>%
+  inner_join(povertyRate, by = "Name") %>%
+  mutate(Population = round(as.numeric(`Poverty Estimate, All Ages`) * (100 / as.numeric(`Poverty Percent, All Ages`))))
+  
+smallDf = df %>% 
+  select(`County`, `Violent crime`, `Murder and nonnegligent manslaughter`, `Rape`, `Robbery`, `Aggravated assault`, `Property crime`, `Burglary`, `Larceny-
+theft`, `Motor vehicle theft`, `Arson`, `Poverty Estimate, All Ages`, `Poverty Percent, All Ages`, `Population`)
+#fullCrime = crimeData %>%
+#  mutate(`Name` =str_c(County, " County"))
+
+#metro = c(rep("Metropolitan", 24), rep("Nonmetropolitan", 39))
+#df = fullCrime %>%
+#  inner_join(povertyRate, by = "Name") %>%
+#  mutate(Population = round(as.numeric(`Poverty Estimate, All Ages`) * (100 / as.numeric(`Poverty Percent, All Ages`)))) %>%
+#  mutate(`Metropolitan/Nonmetropolitan` = metro)
+```
+
+```{r}
+smallDF = df %>%
+  select(`Metropolitan/Nonmetropolitan`, `County`, `Violent crime`, `Murder and nonnegligent manslaughter`, `Rape`, `Robbery`, `Aggravated assault`, `Property crime`, `Burglary`, `Larceny-
+theft`, `Motor vehicle theft`, `Arson`, `Poverty Estimate, All Ages`, `Poverty Percent, All Ages`, `Population`)
+```
+
+Add a new chunk by clicking the *Insert Chunk* button on the toolbar or by pressing *Cmd+Option+I*.
+
+When you save the notebook, an HTML file containing the code and output will be saved alongside it (click the *Preview* button or press *Cmd+Shift+K* to preview the HTML file). 
+
+The preview shows you a rendered HTML copy of the contents of the editor. Consequently, unlike *Knit*, *Preview* does not run any R code chunks. Instead, the output of the chunk when it was last run in the editor is displayed.
+
