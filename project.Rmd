@@ -7,7 +7,13 @@ editor_options:
   chunk_output_type: inline
 ---
 ## Introduction
-For our project, we focused on crime in Wisconsin as we have been seeing more and more crime in the news and wanted to see the crime levels in Wisconsin by county. More specifically, we wanted to answer the question: What is the relationship between wealth and crime?. To answer this question, we are defining wealth in each county is two ways: Median income and percent in poverty. From that, we plan to use a 95% confidence interval and linear regression to find how those factors affect the a vareity of crime (Assault, Arson, Murders, Larceny, Rape, and Robberies).
+The question of whether there is a correlation between poverty and crime rate is complex and argumentative. Some argue that crime is driven by lack of social justice, imbalanced love from families, or mental health issues; others contend that induced crime rate is parallel to an increase in income inequality. While both sides may be correct, in our project, we will focus on crimes in Wisconsin as we have been seeing more and more crime in the news and wanted to observe the crime levels in Wisconsin by county. We wanted to answer the question: What is the relationship between poverty and crime? Our group has taken the stance that crime will be higher in wealthier metropolitan counties due to the fact they have a high population density and total poverty. To answer this question, we are defining wealth in each county in two ways: Median income and percent in poverty. From that, we plan to use a 95% confidence interval and linear regression to find how those factors affect the various crimes (Assault, Arson, Murders, Larceny, Rape, and Robberies). 
+
+## Background
+
+## Analysis
+
+
 
 ```{r setup, include=FALSE}
 library(tidyverse)
@@ -42,8 +48,9 @@ df = finalCrime %>%
   mutate(Population = round(as.numeric(`Poverty Estimate, All Ages`) * (100 / as.numeric(`Poverty Percent, All Ages`))))
   
 finalDF = df %>% 
-  select(-`Human Trafficking - Commercial Sex`, -`Human Trafficking - Involuntary Servitude`, -`Name`, -`State FIPS Code`, -`County FIPS Code`, -`Postal Code`) %>%
-  select(-starts_with("90%"))
+  select(-`Human Trafficking - Commercial Sex`, -`Human Trafficking - Involuntary Servitude`, -`Name`, -`State FIPS Code`, -`County FIPS Code`, -`Postal Code`, -`Poverty Estimate, Age 0-4`, -`Poverty Percent, Age 0-4`) %>%
+  select(-starts_with("90%")) %>% mutate_at(vars(starts_with("Poverty")), as.numeric)
+  mutate
 #fullCrime = crimeData %>%
 #  mutate(`Name` =str_c(County, " County"))
 
@@ -53,12 +60,50 @@ finalDF = df %>%
 #  mutate(Population = round(as.numeric(`Poverty Estimate, All Ages`) * (100 / as.numeric(`Poverty Percent, All Ages`)))) %>%
 #  mutate(`Metropolitan/Nonmetropolitan` = metro)
 ```
+>First, to get introduced to the data, we wanted to just show the amount of crime in each county, organized by population
 
 ```{r, echo=FALSE}
-ggplot(finalDF) + geom_col(aes(x = reorder(County, -Population), y = `Violent Crime`/(Population/100000)), fill = "navy") + theme(axis.text.x = element_text(angle = 90, vjust = 0.5)) + xlab("County") + ylab("Amount of Violent Crime per 100,000") + ggtitle("Amount of violent crime in Wisconsin by County", "In 2019")
+ggplot(finalDF) + geom_col(aes(x = reorder(County, -Population), y = `Property Crime`/(Population/100000), fill = "Property")) + geom_col(aes(x = reorder(County, -Population), y = `Violent Crime`/(Population/100000), fill = "Violent")) + theme(axis.text.x = element_text(angle = 90, vjust = 0.5)) + xlab("County") + ylab("Amount of Crime per 100,000") + ggtitle("Amount of Violent and Property crime in Wisconsin by County", "In 2019") 
 ```
+<br>From this graph, it is easy to see that most counties (including Dane county) have around 250 or fewer acts of violent crime per 100,000 people. However, the notable exception to this can be seen with the most-populated county in Wisconsin: Milwaukee. It is a big outlier in that it has nearly 1000 acts of violent crime per 100,000 (almost 1%). Every county also had a much higher property crimes compared to violent crime, with it peaking with Douglas County, which had almost 3000 property crimes per 100 thousand people (although the county only has around 40,000 people).
+
 ```{r, echo=FALSE}
-ggplot(finalDF) + geom_point(aes(x = reorder(County, -Population), y = as.numeric(`Median Household Income`))) + theme(axis.text.x = element_text(angle = 90, vjust = 0.5))
+ggplot(finalDF) + geom_point(aes(x = `Population`, y = `Violent Crime`, color = "Violent Crime")) + geom_smooth(se = FALSE, aes(x = `Population`, y = `Violent Crime`, color = "Violent Crime"), method = "lm", formula = y ~ x) + 
+  geom_point(aes(x = `Population`, y = `Property Crime`, color = "Property Crime")) + 
+  geom_smooth(se = FALSE, aes(x = `Population`, y = `Property Crime`, color = "Property Crime"), method = "lm", formula = y ~ x) + ylab("Crimes per 100k people") + xlab("County Population") + ggtitle("Wisconsin crimes by county population", "2019")
 ```
+<br>This graph further justifies the claim that Milwaukee has more crime than expected for a city in Wisconsin for the population as it is over the average for both property and violent crime. However, also suprising is that Dane county (the dot with the 2nd highest population) is below in both categories, which is not something you would expect from all the WISC alerts.
+```{r}
+cor(finalDF$`Population`, finalDF$`Property Crime`)
+```
+> Next we looked at the relationship between total poverty and crime
 
+```{r, echo=FALSE}
+ggplot(finalDF, aes(x = `Poverty Percent, All Ages`, y = (`Violent Crime` + `Property Crime`)/(Population/100000))) + geom_point() + geom_smooth(se = FALSE, method = "lm", formula = y ~ x) + ylab("Total Crime per 100k") + xlab("% of population living below the federal poverty line") + ggtitle("Crime per 100k in Wisconsin by percent in county living in poverty", "in 2019")
+```
+```{r}
+cor(finalDF$`Poverty Percent, All Ages`, finalDF$`Property Crime` + finalDF$`Violent Crime`)
+```
+<br>The graph and R squared value show that the relationship between poverty and crime is not linear. While the best fit line appears to slightly increase, this doesn't necessary prove causation (or even correlation really) that higher poverty means higher crime. A clear counter example is Menominee county, which has over a quarter of it's people living in poverty, yet it has the 2nd lowest crime rate. This is very surprising as most people would assume that the higher the percent of the population that is poor, the more desperate they are, thus a higher crime, but the evidence doesn't really support this.
 
+> Next we looked at the relationship between child poverty and crime
+
+```{r, echo=FALSE}
+ggplot(finalDF, aes(x = `Poverty Percent, Age 0-17`, y = (`Violent Crime` + `Property Crime`)/(Population/100000))) + geom_point() + geom_smooth(se = FALSE, method = "lm", formula = y ~ x) + ylab("Total Crime per 100k") + xlab("% of children living below the federal poverty line") + ggtitle("Crime per 100k in Wisconsin by percent of children in county living in poverty", "in 2019")
+```
+<br>The graph alone clearly shows that there is little evidence for a linear relationship between childhood poverty rate and crime (at least in Wisconsin in 2019).
+
+> Another relationship that could be intersting is that of median income of the household and the crime rate
+
+```{r, echo=FALSE}
+ggplot(finalDF, aes(x = as.numeric(`Median Household Income`), y = (`Violent Crime` + `Property Crime`)/(Population/100000))) + geom_point() + geom_smooth(se = FALSE, method = "lm", formula = y ~ x) + ylab("Total Crime per 100k") + xlab("Median household income ($)") + ggtitle("Crime per 100k in Wisconsin by Median Household Income", "in 2019")
+```
+```{r}
+cor(as.numeric(finalDF$`Median Household Income`), (finalDF$`Property Crime`) + (finalDF$`Violent Crime`))
+```
+<br>Again, the graph and R squared value (0.0644) show that there basically doesn't exist a linear relationship between median household income and total crime in Wisconsin. Again, this goes against the "common" knowledge that crime would increase the less wealthy the county is, but it looks like there is no relationship.
+
+> Final Calculations
+
+As the graphs above have demonstrated, there is little evidence to suggest that wealth and crime are correlated, thus making it almost impossible to predict the crime rate solely based on the household income or poverty rate of the county. Moreover, we discovered that the best single factor for predicting a crime rate is population, so we are now going to create a confidence interval.. (IDK what to do)
+## Discussion
