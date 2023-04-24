@@ -13,8 +13,6 @@ The question of whether there is a correlation between poverty and crime rate is
 
 ## Analysis
 
-
-
 ```{r setup, include=FALSE}
 library(tidyverse)
 library(readr)
@@ -70,7 +68,7 @@ ggplot(finalDF) + geom_col(aes(x = reorder(County, -Population), y = `Property C
 ```{r, echo=FALSE}
 ggplot(finalDF) + geom_point(aes(x = `Population`, y = `Violent Crime`, color = "Violent Crime")) + geom_smooth(se = FALSE, aes(x = `Population`, y = `Violent Crime`, color = "Violent Crime"), method = "lm", formula = y ~ x) + 
   geom_point(aes(x = `Population`, y = `Property Crime`, color = "Property Crime")) + 
-  geom_smooth(se = FALSE, aes(x = `Population`, y = `Property Crime`, color = "Property Crime"), method = "lm", formula = y ~ x) + ylab("Crimes per 100k people") + xlab("County Population") + ggtitle("Wisconsin crimes by county population", "2019")
+  geom_smooth(se = FALSE, aes(x = `Population`, y = `Property Crime`, color = "Property Crime"), method = "lm", formula = y ~ x) + ylab("Number of reported crimes in the county") + xlab("County Population") + ggtitle("Wisconsin crimes by county population", "2019")
 ```
 <br>This graph further justifies the claim that Milwaukee has more crime than expected for a city in Wisconsin for the population as it is over the average for both property and violent crime. However, also suprising is that Dane county (the dot with the 2nd highest population) is below in both categories, which is not something you would expect from all the WISC alerts.
 ```{r}
