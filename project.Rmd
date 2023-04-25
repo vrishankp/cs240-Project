@@ -7,9 +7,31 @@ editor_options:
   chunk_output_type: inline
 ---
 ## Introduction
-The question of whether there is a correlation between poverty and crime rate is complex and argumentative. Some argue that crime is driven by lack of social justice, imbalanced love from families, or mental health issues; others contend that induced crime rate is parallel to an increase in income inequality. While both sides may be correct, in our project, we will focus on crimes in Wisconsin as we have been seeing more and more crime in the news and wanted to observe the crime levels in Wisconsin by county. We wanted to answer the question: What is the relationship between poverty and crime? Our group has taken the stance that crime will be higher in wealthier metropolitan counties due to the fact they have a high population density and total poverty. To answer this question, we are defining wealth in each county in two ways: Median income and percent in poverty. From that, we plan to use a 95% confidence interval and linear regression to find how those factors affect the various crimes (Assault, Arson, Murders, Larceny, Rape, and Robberies). 
+The question of whether there is a correlation between poverty and crime rate is complex and argumentative. Some argue that crime is driven by lack of social justice, imbalanced love from families, or mental health issues; others contend that induced crime rate is parallel to an increase in income inequality. While both sides may be correct, in our project, we will focus on crimes in Wisconsin as we have been seeing more and more crime in the news and wanted to observe the crime levels in Wisconsin by county. We wanted to answer the question: What is the relationship between poverty and crime? Our group has taken the stance that crime will be higher in wealthier metropolitan counties due to the fact they have a high population density. To answer this question, we are defining wealth in each county in two ways: Median income and percent in poverty. From that, we plan to use a 95% confidence interval and linear regression to find how those factors affect the various crimes (Assault, Arson, Murders, Larceny, Rape, and Robberies). 
 
 ## Background
+
+>About the raw Data:
+
+The data set we’re using is a combination of data from the Census Bureau and Wisconsin Department of Justice. The census data gave us county level statistics for poverty and income in Wisconsin in 2019 which were created using a blend of census data and different estimation techniques. With the Wisconsin Department of Justice data set, we took only data from 2019 and pivoted the data wider in order to get counts based on the type of offense. We then joined the two data sets using county names and selected the variables of interest, such as violent crime, property crime, median household income, and population (which was calculated using the poverty rate).
+
+> Data Citation:
+
+Bureau, U.S.C. (2021) SAIPE state and County estimates for 2019, Census.gov. Available at: https://www.census.gov/data/datasets/2019/demo/saipe/2019-state-and-county.html (Accessed: April 17, 2023). 
+<br>
+Wisconsin Department of Justice. UCR Offense Data | Wisconsin Department of Justice. (n.d.). Retrieved April 17, 2023, from https://www.doj.state.wi.us/dles/bjia/ucr-offense-data 
+
+>Background Info:
+
+Crime is often associated with levels of income, so we sought to see what the correlation really was in Wisconsin at the county level using poverty and crime rates at the county level
+
+>Unusual factors:
+
+There are a couple of counties that fall towards the extremes, for example one of the counties (Menominee) with the highest rates of poverty  in Wisconsin has one of the lowest crime rates as well which slightly goes against the trend of the data. Another county, Milwaukee has an extremely high crime rate, however this rate is not as much of an outlier when compared to other counties. Where Menominee is a  pretty strong outlier in poverty rate.
+
+>Report Intent:
+
+Intend to find the correlation between poverty rate and crime rates within counties in Wisconsin to try and help answer whether the two are related or not. 
 
 ## Analysis
 
@@ -18,6 +40,7 @@ library(tidyverse)
 library(readr)
 library(readxl)
 library(stringr)
+source("../scripts/ggprob.R")
 povertyRate = read_xls("est19all.xls", col_names = TRUE, skip = 3) %>%
   filter(`Postal Code` == "WI")
 #crimeData = read_xls("wisconsin.xls", skip = 5)
@@ -103,5 +126,32 @@ cor(as.numeric(finalDF$`Median Household Income`), (finalDF$`Property Crime`) + 
 
 > Final Calculations
 
-As the graphs above have demonstrated, there is little evidence to suggest that wealth and crime are correlated, thus making it almost impossible to predict the crime rate solely based on the household income or poverty rate of the county. Moreover, we discovered that the best single factor for predicting a crime rate is population, so we are now going to create a confidence interval.. (IDK what to do)
+As the graphs above have demonstrated, there is little evidence to suggest that wealth and crime are correlated, thus making it almost impossible to predict the crime rate solely based on the household income or poverty rate of the county. Moreover, we discovered that the best single factor for predicting a crime rate is population, so we are now going to create a confidence interval. First step is to check normality:
+```{r, echo=FALSE}
+crimeRates = finalDF$`Violent Crime` + finalDF$`Property Crime` + finalDF$`Simple Assault`
+x.bar = mean(crimeRates)
+sd = sd(sort(crimeRates)[1:69])
+ggplot(finalDF, aes(x = (`Violent Crime` + `Property Crime` + `Simple Assault`)/(Population/100000))) + geom_density() + geom_norm_density(x.bar, sd) + ylab("Total crime per 100k people") + ggtitle("Density curve of crime rate vs normal curve")
+```
+<br>Clearly, the data is far from normal (as to be expected with the outliers), so a confidence interval would be inappropriate to do. 
+
+Finally, we wanted to conclusively answer our research question on the relationship between crime rate and poverty rate. Since the linear line is molded by:
+
+
+$$ Y_i = \beta_0 + \beta_1 X_i + \varepsilon_i $$
+
+
+We state the hypothesis:
+$$H_0: \beta_1 = 0$$
+$$H_a: \beta_1 \neq 0$$
+
+
+Calculations:
+$$T =  \frac{(\hat{\beta}_1 - H_0)}{SE} = 1.463$$
+$$P_{value}  = 2 * [1 - pt(T, 69)]= 0.148 $$
+
+
+The evidence is consistent(p = 0.148, two-sided t test) with $\beta_1$ equals to zero. Thus, there is no direct relationship between crime rate and poverty percentage in an area.
+
 ## Discussion
+Based on the evidence provided, there is little to no linear relationship between poverty and crime rates in Wisconsin. While there appears to be a slight positive correlation between poverty and crime rates, the correlation coefficient of 0.1506642 suggests that this relationship is not particularly strong. Similarly, there is no evidence of a linear relationship between child poverty and crime rates in Wisconsin, and there appears to be no relationship between median household income and crime rates in Wisconsin. However, there are potential shortcomings to our analysis. According to Pew Research Center, most violent and property crimes are not reported in the US. ^[https://www.pewresearch.org/short-reads/2020/11/20/facts-about-crime-in-the-u-s/#:~:text=Most%20violent%20and%20property%20crimes,are%20reported%20are%20not%20solved.] This means that while the data still shows us a picture of the trend seen with crime and poverty in Wisconsin, we must acknowledge that there is potentially crime that is not accounted for by our analysis.  Furthermore, these results are specific to Wisconsin in 2019, and further research with other factors may be needed to fully understand the complex relationship between poverty, wealth, and crime. Future direction for our research question will incorporate this as well as expanding our population from Wisconsin to the entirety of the US. We can potentially source our data from the US Census Bureau and the Bureau of Justice Statistics to provide a wealth of data on poverty, wealth, and crime at the national level as well as secondary sourcing from academic research. The analysis concludes that there is little evidence to support a linear relationship between poverty or household income and crime rates in Wisconsin. The primary evidence to support this includes correlation coefficients, regression models, and graphs that show the lack of a clear trend between these factors.
