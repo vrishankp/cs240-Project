@@ -116,7 +116,7 @@ model3 = lm(totalCrime ~ `Poverty Percent, All Ages`, finalDF)
 summary(model3)
 ```
 
-<br>The graph, R squared value, and the hypothesis test show that the relationship between poverty and crime is not linear. While the best fit line appears to slightly increase, this doesn't necessary prove causation (or even correlation really) that higher poverty means higher crime. The hypothesis test shows that we don't have sufficient evidence to claim that the actual value for slope is not zero (two sided t test, p = 0.210 > alpha = 0.05). A clear counter example is Menominee county, which has over a quarter of it's people living in poverty, yet it has the 2nd lowest crime rate. This is very surprising as most people would assume that the higher the percent of the population that is poor, the more desperate they are, thus a higher crime, but the evidence doesn't really support this.
+<br>The graph, R squared value, and the hypothesis test show that the relationship between poverty and crime lacks sufficent evidence to be considered linear. While the best fit line appears to slightly increase, this doesn't necessary prove causation (or even correlation really) that higher poverty means higher crime. The hypothesis test shows that we don't have sufficient evidence to claim that the actual value for slope is not zero (two sided t test, p = 0.210 > alpha = 0.05). A clear counter example is Menominee county, which has over a quarter of it's people living in poverty, yet it has the 2nd lowest crime rate. This is very surprising as most people would assume that the higher the percent of the population that is poor, the more desperate they are, thus a higher crime, but the evidence doesn't really support this.
 
 > Next we looked at the relationship between child poverty and crime
 
@@ -129,6 +129,7 @@ model4 = lm(totalCrime ~ `Poverty Percent, Age 0-17`, finalDF)
 summary(model4)
 ```
 <br> The hypothesis test again shows little evidence suggesting that the true slope of the relationship between childhood poverty and crime in Wisconsin is not 0 (2 sided hypothesis test, p = 0.666).
+
 > Another relationship that could be intersting is that of median income of the household and the crime rate
 
 ```{r, echo=FALSE}
@@ -138,7 +139,7 @@ plot4
 ```{r}
 cor(as.numeric(finalDF$`Median Household Income`), (finalDF$`Property Crime`) + (finalDF$`Violent Crime`))
 ```
-<br>Again, the graph and R squared value (0.0644) show that there basically doesn't exist a linear relationship between median household income and total crime in Wisconsin. This goes against the "common" knowledge that crime would increase the less wealthy the county is, but it looks like there is no relationship.
+<br>Again, the graph shows that there basically doesn't exist a strong linear relationship between median household income and total crime in Wisconsin. This goes against the "common" knowledge that crime would increase the less wealthy the county is, but it looks like there is no relationship.
 
 > Final Calculations
 
